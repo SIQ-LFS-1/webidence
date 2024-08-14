@@ -1,0 +1,8 @@
+BACKUP
+results
+rclone.log
+uploadables
+__pycache__
+*.txt
+PIDs
+!requirements.txt
