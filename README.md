@@ -1,7 +1,5 @@
 # WEBIDENCE POC - Standalone
 
-Gitlab Link : https://gitlab.vairav.net/siq/webidence.git
-
 ## Table of Contents
 - [WEBIDENCE POC - Standalone](#webidence-poc---standalone)
   - [Table of Contents](#table-of-contents)
@@ -194,4 +192,5 @@ If no arguments are provided, the tool will prompt the user for the necessary in
 - The tool is designed to handle interruptions gracefully, ensuring all processes are terminated properly.
 - The tool supports both interactive and non-interactive (argument-based) modes for flexibility.
 
-
+## Author
+[Aayush Rajthala](https://github.com/AayushRajthala99)
