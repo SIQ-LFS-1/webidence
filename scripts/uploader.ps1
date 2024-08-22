@@ -6,9 +6,12 @@ try {
     $FOLDERNAME = [string]$args[4]
     $RCLONEPATH = [string]$args[5]
 
+    $SRC = ".\uploadables\$directory"
+    $DST = "$($RCLONE_ALIAS):$UPLOADFOLDER/$VENDOR/$FOLDERNAME/$directory/"
+
     Write-Output "`n--[ INFO ]--[ OPERATION--UPLOAD OPERATION STARTED ]`n"
 
-    & $RCLONEPATH copy --stats 2s --progress --drive-acknowledge-abuse --create-empty-src-dirs --transfers 5 --stats-log-level NOTICE ".\uploadables\$directory\" "$($RCLONE_ALIAS):$UPLOADFOLDER/$VENDOR/$FOLDERNAME/" --config .\credentials\rclone.conf --log-file .\rclone.log
+    & $RCLONEPATH copy --stats 2s --progress --drive-acknowledge-abuse --create-empty-src-dirs --transfers 5 --stats-log-level NOTICE $SRC $DST --config .\credentials\rclone.conf --log-file .\rclone.log
 
     Write-Output "`n--[ RESULT ]--[ UPLOAD OPERATION COMPLETED ]"
 
