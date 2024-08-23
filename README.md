@@ -1,7 +1,5 @@
 # WEBIDENCE POC - Standalone
 
-Gitlab Link : https://gitlab.vairav.net/siq/webidence.git
-
 ## Table of Contents
 - [WEBIDENCE POC - Standalone](#webidence-poc---standalone)
   - [Table of Contents](#table-of-contents)
@@ -19,6 +17,7 @@ Gitlab Link : https://gitlab.vairav.net/siq/webidence.git
   - [7. Workflow](#7-workflow)
   - [8. Execution Flow](#8-execution-flow)
   - [9. Additional Notes](#9-additional-notes)
+  - [Author](#author)
 
 ## 1. Introduction
 Webidence is a comprehensive tool designed to capture desktop screens, network traffic, and logs on a running machine. It organizes the captured data and uploads it to a storage space via rclone.
@@ -195,3 +194,5 @@ If no arguments are provided, the tool will prompt the user for the necessary in
 - The tool supports both interactive and non-interactive (argument-based) modes for flexibility.
 
 
+## Author
+[Aayush Rajthala](https://github.com/AayushRajthala99)
