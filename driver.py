@@ -1,8 +1,8 @@
-# Date : 2024/08/05 (YYYY/MM/DD)
+# Date : 2024/08/23 (YYYY/MM/DD)
 # Author: Aayush Rajthala
 # This script is designed to capture desktop screen & network traffic of the running machine, and place them in their respective folder in google drive using rclone.
 # This script now runs in both headless and visual mode
-# AKA >> Pcapture v3.5
+# AKA >> Pcapture v3.6
 
 import os
 import sys
@@ -97,6 +97,7 @@ else:
 
 vmInfoFilepath = getFullPath("credentials/vmInfo.json")
 projectInfoFilepath = getFullPath("credentials/projectInfo.json")
+rcloneConfigFilepath = getFullPath("credentials/rclone.conf")
 ffmpegFilepath = getFullPath("dependencies/ffmpeg/bin/ffmpeg.exe")
 tsharkFilepath = getFullPath("dependencies/wireshark/tshark.exe")
 
@@ -107,6 +108,9 @@ tsharkFilepath = getFullPath("dependencies/wireshark/tshark.exe")
 def checkDependencies():
     clear_screen()
 
+    MISSING = False
+    EMPTY = False
+
     # Define all required files
     required_files = [
         capture_script,
@@ -114,22 +118,26 @@ def checkDependencies():
         uploader_script,
         vmInfoFilepath,
         projectInfoFilepath,
+        rcloneConfigFilepath,
     ]
 
     # Check platform-specific dependencies
     if isWin():
         required_files.extend([ffmpegFilepath, tsharkFilepath])
 
-    # Check for the existence of each required file
-    missing_files = [
-        file for file in required_files if not checkExistence(getFullPath(file))
-    ]
+    printMessage(STATUSCODE[1], "Dependencies Check")
+    for file in required_files:
+        if not checkExistence(getFullPath(file)):
+            print(f"\033[1;31mMissing \033[0m: {file}")
+            MISSING = True
+        else:
+            if "rclone.conf" in file and os.path.getsize(file) == 0:
+                print(f"\033[1;34mEmpty \033[0m: {file}")
+                EMPTY = True
+            else:
+                print(f"\033[1;32mFound \033[0m: {file}")
 
-    if missing_files:
-        printMessage(STATUSCODE[0], "Missing Dependencies")
-        for file in missing_files:
-            print(f"\033[1;31mMissing\033[0m: {file}")
-
+    if MISSING or EMPTY:
         exit()
 
     # If all files exist, return successfully
@@ -605,6 +613,7 @@ def killProcess(tester):
         except Exception as error:
             pass
 
+    clear_screen()
     # resetPIDs(testerID=tester)
 
 
@@ -621,16 +630,16 @@ def watchdog():
         time.sleep(2)
 
 
-def signal_handler(sig, frame):
-    global TESTER
+# def signal_handler(sig, frame):
+#     global TESTER
 
-    print("\nKeyboard Interrupt Detected! Exiting gracefully...")
-    killProcess(TESTER)
-    exit()
+#     print("\nKeyboard Interrupt Detected! Exiting gracefully...")
+#     killProcess(TESTER)
+#     exit()
 
 
 # Signal handler for SIGINT (Ctrl+C)
-signal.signal(signal.SIGINT, signal_handler)
+# signal.signal(signal.SIGINT, signal_handler)
 
 
 ############################################################################################
@@ -768,49 +777,54 @@ def main():
             # Capture Script Execution...
             subprocess.run(scriptArguments)
 
-            if UPLOADSTATUSVALID == 1:
-                # Copying Results from Results to Uploadables...
-                copyResults(directoryName)
-
-                # Performing upload operation...
-                performUpload(directoryName, VENDOR, FOLDERNAME)
-
-            if UPLOADSTATUSVALID == -1:
-                while True:
-                    clear_screen()
-
-                    # Ask if user wants to upload...
-                    choice = (
-                        input("\nDo you want to Upload (y/n)? >>> ").strip().lower()
-                    )
-                    if choice == "yes" or choice == "y":
-                        # Copying Results from Results to Uploadables...
-                        copyResults(directoryName)
-
-                        # Performing upload operation...
-                        performUpload(directoryName, VENDOR, FOLDERNAME)
-
-                        # Breaking Loop...
-                        break
-
-                    else:
-                        choice = (
-                            input("\nAre you sure you don't want to upload (y/n)? >>> ")
-                            .strip()
-                            .lower()
-                        )
-                        if choice == "yes" or choice == "y":
-                            break
-
-            # Test Completed ASCII ART...
-            successBanner()
-
         else:
             print(generationStatus["error"])
             raise Exception("DIRECTORY GENERATION FAILURE")
 
+    except KeyboardInterrupt:
+        print("\nKeyboard Interrupt Detected! Exiting gracefully...")
+        killProcess(TESTER)
+
     except Exception as error:
         printMessage(STATUSCODE[0], error)
+
+    finally:
+        killProcess(TESTER)
+
+        if UPLOADSTATUSVALID == 1:
+            # Copying Results from Results to Uploadables...
+            copyResults(directoryName)
+
+            # Performing upload operation...
+            performUpload(directoryName, VENDOR, FOLDERNAME)
+
+        if UPLOADSTATUSVALID == -1:
+            while True:
+                clear_screen()
+
+                # Ask if user wants to upload...
+                choice = input("\nDo you want to Upload (y/n)? >>> ").strip().lower()
+                if choice == "yes" or choice == "y":
+                    # Copying Results from Results to Uploadables...
+                    copyResults(directoryName)
+
+                    # Performing upload operation...
+                    performUpload(directoryName, VENDOR, FOLDERNAME)
+
+                    # Breaking Loop...
+                    break
+
+                else:
+                    choice = (
+                        input("\nAre you sure you don't want to upload (y/n)? >>> ")
+                        .strip()
+                        .lower()
+                    )
+                    if choice == "yes" or choice == "y":
+                        break
+
+        # Test Completed ASCII ART...
+        successBanner()
 
 
 if __name__ == "__main__":

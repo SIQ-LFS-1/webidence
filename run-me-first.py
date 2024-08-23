@@ -58,10 +58,13 @@ def check_and_install_libraries(required_libraries):
             importlib.import_module(library)
         except ImportError:
             printMessage(STATUSCODE[0], f"Library '{library}' not found. Installing...")
+            if library == "dotenv":
+                library = "python-dotenv"
+
             subprocess.check_call([sys.executable, "-m", "pip", "install", library])
 
 
-required_libraries = ["psutil", "python-dotenv"]
+required_libraries = ["psutil", "dotenv"]
 
 # Run the library check
 check_and_install_libraries(required_libraries)
@@ -83,6 +86,7 @@ else:
 
 vmInfoFilepath = getFullPath("credentials/vmInfo.json")
 projectInfoFilepath = getFullPath("credentials/projectInfo.json")
+rcloneConfigFilepath = getFullPath("credentials/rclone.conf")
 ffmpegFilepath = getFullPath("dependencies/ffmpeg/bin/ffmpeg.exe")
 tsharkFilepath = getFullPath("dependencies/wireshark/tshark.exe")
 
@@ -94,6 +98,9 @@ tsharkFilepath = getFullPath("dependencies/wireshark/tshark.exe")
 def checkDependencies():
     clear_screen()
 
+    MISSING = False
+    EMPTY = False
+
     # Define all required files
     required_files = [
         capture_script,
@@ -101,6 +108,7 @@ def checkDependencies():
         uploader_script,
         vmInfoFilepath,
         projectInfoFilepath,
+        rcloneConfigFilepath,
     ]
 
     # Check platform-specific dependencies
@@ -110,9 +118,17 @@ def checkDependencies():
     printMessage(STATUSCODE[1], "Dependencies Check")
     for file in required_files:
         if not checkExistence(getFullPath(file)):
-            print(f"\033[1;31mMissing\033[0m: {file}")
+            print(f"\033[1;31mMissing \033[0m: {file}")
+            MISSING = True
         else:
-            print(f"\033[1;32mFound \033[0m: {file}")
+            if "rclone.conf" in file and os.path.getsize(file) == 0:
+                print(f"\033[1;34mEmpty \033[0m: {file}")
+                EMPTY = True
+            else:
+                print(f"\033[1;32mFound \033[0m: {file}")
+
+    if MISSING or EMPTY:
+        exit()
 
     # If all files exist, return successfully
     return

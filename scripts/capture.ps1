@@ -7,6 +7,17 @@ $LCAPTURE = ($args[5] -eq "True")
 $PCAPTURE = ($args[6] -eq "True")
 $VCAPTURE = ($args[7] -eq "True")
 
+# Function to get all child processes of a given parent process ID
+function Get-ChildProcesses {
+    param (
+        [int]$ParentPID
+    )
+
+    # Get all child processes of the specified parent process
+    $childProcesses = Get-WmiObject Win32_Process | Where-Object { $_.ParentProcessId -eq $ParentPID }
+
+    return $childProcesses
+}
 
 # Driver Code...
 try {
@@ -62,6 +73,13 @@ try {
 
             Add-Content -Path ".\PIDs\$tester-PIDs.txt" -Value "$pcap_pid`n"
 
+            # Fetch child processes spawned by the parent process (tshark in this case)
+            $childProcesses = Get-ChildProcesses -ParentPID $pcap_pid
+        
+            foreach ($child in $childProcesses) {
+                Add-Content -Path ".\PIDs\$tester-PIDs.txt" -Value "$pcap_pid`n"
+            }
+
             Wait-Process -Id $pcap_pid
         }
         else {
@@ -69,6 +87,13 @@ try {
             $pcap_pid = $pcapProcess.Id
 
             Add-Content -Path ".\PIDs\$tester-PIDs.txt" -Value "$pcap_pid`n"
+
+            # Fetch child processes spawned by the parent process (tshark in this case)
+            $childProcesses = Get-ChildProcesses -ParentPID $pcap_pid
+        
+            foreach ($child in $childProcesses) {
+                Add-Content -Path ".\PIDs\$tester-PIDs.txt" -Value "$pcap_pid`n"
+            }
             
             Write-Output "`n--OPERATION--Packet Capture Operation Started!"
         }
