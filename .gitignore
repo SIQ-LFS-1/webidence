@@ -1,8 +1,8 @@
 BACKUP
 results
-rclone.log
 uploadables
 __pycache__
 *.txt
+*.log
 PIDs
 !requirements.txt

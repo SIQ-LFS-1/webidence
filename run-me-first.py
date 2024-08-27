@@ -7,6 +7,16 @@ from os import path as directoryPath
 from os.path import exists as checkExistence
 
 ############################################################################################
+# Banner function...
+
+
+def infoBanner():
+    print("\n[ WEBIDENCE-STANDALONE ] Developed By Aayush Rajthala!\n")
+
+
+infoBanner()
+
+############################################################################################
 # ENVIRONMENT FUNCTIONS & VARIABLES
 
 STATUSCODE = ["ERROR", "INFO", "SUCCESS"]
@@ -14,6 +24,14 @@ STATUSCODE = ["ERROR", "INFO", "SUCCESS"]
 
 def getFullPath(pathValue):
     return directoryPath.normpath(directoryPath.abspath(pathValue))
+
+
+def getFileSize(file):
+    return directoryPath.getsize(file)
+
+
+def isFileEmpty(file):
+    return getFileSize(file) == 0
 
 
 def isWin():
@@ -27,6 +45,8 @@ def clear_screen():
         os.system("cls")
     else:
         os.system("clear")
+
+    infoBanner()
 
 
 def printMessage(type, message):
@@ -42,7 +62,7 @@ def printMessage(type, message):
         type = "INFO"
         colorCode = 33
 
-    print(f"--[\033[1;{colorCode}m {type} \033[0m]--[ {message} ]\n")
+    print(f"\n--[\033[1;{colorCode}m {type} \033[0m]--[ {message} ]\n")
 
     return
 
@@ -121,11 +141,13 @@ def checkDependencies():
             print(f"\033[1;31mMissing \033[0m: {file}")
             MISSING = True
         else:
-            if "rclone.conf" in file and os.path.getsize(file) == 0:
+            if isFileEmpty(file):
                 print(f"\033[1;34mEmpty \033[0m: {file}")
                 EMPTY = True
             else:
                 print(f"\033[1;32mFound \033[0m: {file}")
+
+    print("\n")
 
     if MISSING or EMPTY:
         exit()

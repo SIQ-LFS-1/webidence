@@ -24,7 +24,7 @@ from os.path import exists as checkExistence
 
 
 def infoBanner():
-    print("\n[ WEBIDENCE ] Developed By Aayush Rajthala!\n")
+    print("\n[ WEBIDENCE-STANDALONE ] Developed By Aayush Rajthala!\n")
 
 
 def successBanner():
@@ -45,6 +45,14 @@ STATUSCODE = ["ERROR", "INFO", "SUCCESS"]
 
 def getFullPath(pathValue):
     return directoryPath.normpath(directoryPath.abspath(pathValue))
+
+
+def getFileSize(file):
+    return directoryPath.getsize(file)
+
+
+def isFileEmpty(file):
+    return getFileSize(file) == 0
 
 
 def isWin():
@@ -75,7 +83,7 @@ def printMessage(type, message):
         type = "INFO"
         colorCode = 33
 
-    print(f"--[\033[1;{colorCode}m {type} \033[0m]--[ {message} ]\n")
+    print(f"\n--[\033[1;{colorCode}m {type} \033[0m]--[ {message} ]\n")
 
     return
 
@@ -131,11 +139,13 @@ def checkDependencies():
             print(f"\033[1;31mMissing \033[0m: {file}")
             MISSING = True
         else:
-            if "rclone.conf" in file and os.path.getsize(file) == 0:
+            if isFileEmpty(file):
                 print(f"\033[1;34mEmpty \033[0m: {file}")
                 EMPTY = True
             else:
                 print(f"\033[1;32mFound \033[0m: {file}")
+
+    print("\n")
 
     if MISSING or EMPTY:
         exit()
@@ -282,14 +292,14 @@ def get_default_interface():
 
 
 def get_rclone_path():
-    command = "where rclone" if os.name == "nt" else "which rclone"
+    command = "where rclone" if isWin() else "which rclone"
     try:
         result = subprocess.check_output(command, shell=True, universal_newlines=True)
         result = directoryPath.normpath(result.strip())
         return result
 
     except Exception as error:
-        print("Error finding python executable.")
+        print("Error finding rclone executable.")
         return None
 
 
@@ -553,6 +563,39 @@ def performUpload(directoryName, VENDOR, FOLDERNAME):
     )
 
 
+def checkUploadStatus(directoryName, VENDOR, FOLDERNAME):
+    global RCLONE_ALIAS, UPLOAD_FOLDER
+
+    RCLONE_PATH = get_rclone_path()
+
+    # Build the remote path
+    remote_path = (
+        f"{RCLONE_ALIAS}:{UPLOAD_FOLDER}/{VENDOR}/{FOLDERNAME}/{directoryName}"
+    )
+
+    # Command to check if the directory exists in the remote
+    command = [RCLONE_PATH, "lsf", remote_path]
+
+    try:
+        # Execute the command and capture output
+        result = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
+
+        # If the output is empty, the directory doesn't exist; otherwise, it does
+        if result.returncode == 0 and result.stdout:
+            return True
+        else:
+            return False
+
+    except Exception as error:
+        # print(f"Error checking directory status: {error}")
+        return False
+
+
 def safe_terminate(process):
     """
     Terminate a process safely using psutil.
@@ -795,8 +838,15 @@ def main():
             # Copying Results from Results to Uploadables...
             copyResults(directoryName)
 
+            printMessage(STATUSCODE[1], "UPLOAD OPERATION STARTED")
+
             # Performing upload operation...
             performUpload(directoryName, VENDOR, FOLDERNAME)
+
+            if checkUploadStatus(directoryName, VENDOR, FOLDERNAME):
+                printMessage(STATUSCODE[2], "UPLOAD SUCCESSFUL")
+            else:
+                printMessage(STATUSCODE[0], "UPLOAD FAILED")
 
         if UPLOADSTATUSVALID == -1:
             while True:
@@ -808,8 +858,15 @@ def main():
                     # Copying Results from Results to Uploadables...
                     copyResults(directoryName)
 
+                    printMessage(STATUSCODE[1], "UPLOAD OPERATION STARTED")
+
                     # Performing upload operation...
                     performUpload(directoryName, VENDOR, FOLDERNAME)
+
+                    if checkUploadStatus(directoryName, VENDOR, FOLDERNAME):
+                        printMessage(STATUSCODE[2], "UPLOAD SUCCESSFUL")
+                    else:
+                        printMessage(STATUSCODE[0], "UPLOAD FAILED")
 
                     # Breaking Loop...
                     break

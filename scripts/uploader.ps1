@@ -9,11 +9,7 @@ try {
     $SRC = ".\uploadables\$directory"
     $DST = "$($RCLONE_ALIAS):$UPLOADFOLDER/$VENDOR/$FOLDERNAME/$directory/"
 
-    Write-Output "`n--[ INFO ]--[ OPERATION--UPLOAD OPERATION STARTED ]`n"
-
-    & $RCLONEPATH copy --stats 2s --progress --drive-acknowledge-abuse --create-empty-src-dirs --transfers 5 --stats-log-level NOTICE $SRC $DST --config .\credentials\rclone.conf --log-file .\rclone.log
-
-    Write-Output "`n--[ RESULT ]--[ UPLOAD OPERATION COMPLETED ]"
+    & $RCLONEPATH copy --stats 2s --progress --drive-acknowledge-abuse --create-empty-src-dirs --transfers 5 --stats-log-level NOTICE $SRC $DST --config .\credentials\rclone.conf --log-file .\upload.log
 
     # Moving Successful Results to BACKUP
     Move-Item -Force .\uploadables\* .\BACKUP\

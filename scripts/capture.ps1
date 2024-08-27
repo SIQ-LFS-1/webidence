@@ -13,8 +13,13 @@ function Get-ChildProcesses {
         [int]$ParentPID
     )
 
-    # Get all child processes of the specified parent process
-    $childProcesses = Get-WmiObject Win32_Process | Where-Object { $_.ParentProcessId -eq $ParentPID }
+    if ($PSVersionTable.PSVersion.Major -ge 6) {
+        # Use Get-CimInstance for PowerShell Core 6+ or PowerShell 7+
+        $childProcesses = Get-CimInstance Win32_Process | Where-Object { $_.ParentProcessId -eq $ParentPID }
+    } else {
+        # Use Get-WmiObject for Windows PowerShell 2.0 - 5.1
+        $childProcesses = Get-WmiObject Win32_Process | Where-Object { $_.ParentProcessId -eq $ParentPID }
+    }
 
     return $childProcesses
 }
