@@ -729,8 +729,24 @@ def main():
     # Validating arguments...
     if TESTNAME:
         try:
-            VENDOR, FOLDERNAME = TESTNAME.split("-")[:2]
-            TESTER = TESTNAME.split("-")[-1]
+            testname_list = TESTNAME.split("-")
+            VENDOR = [value for value in testname_list if value in VENDORS][0]
+            TESTER = [value for value in testname_list if value in ALLOWED_TESTERS][0]
+            filter_list = (
+                ALLOWED_TESTERS
+                + VENDORS
+                + TEST_TYPES
+                + TEST_CATEGORY
+                + ["B0", "I0", "C0"]
+            )
+
+            foldername_list = [
+                value
+                for value in testname_list
+                if all(filter_value not in value for filter_value in filter_list)
+            ]
+
+            FOLDERNAME = "-".join(foldername_list)
 
         except Exception as error:
             VENDOR = FOLDERNAME = TESTER = "TEST"
@@ -768,7 +784,7 @@ def main():
     try:
         currentDateTime = getCurrentDateTime()
 
-        generationStatus = directoryGeneration(TESTNAME, currentDateTime)
+        generationStatus = directoryGeneration(rf"{TESTNAME}-{VMTYPE}", currentDateTime)
 
         if generationStatus["status"]:
 

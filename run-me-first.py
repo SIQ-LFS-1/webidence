@@ -116,44 +116,49 @@ tsharkFilepath = getFullPath("dependencies/wireshark/tshark.exe")
 
 
 def checkDependencies():
-    clear_screen()
+    try:
+        clear_screen()
 
-    MISSING = False
-    EMPTY = False
+        MISSING = False
+        EMPTY = False
 
-    # Define all required files
-    required_files = [
-        capture_script,
-        directory_generation_script,
-        uploader_script,
-        vmInfoFilepath,
-        projectInfoFilepath,
-        rcloneConfigFilepath,
-    ]
+        # Define all required files
+        required_files = [
+            capture_script,
+            directory_generation_script,
+            uploader_script,
+            vmInfoFilepath,
+            projectInfoFilepath,
+            rcloneConfigFilepath,
+        ]
 
-    # Check platform-specific dependencies
-    if isWin():
-        required_files.extend([ffmpegFilepath, tsharkFilepath])
+        # Check platform-specific dependencies
+        if isWin():
+            required_files.extend([ffmpegFilepath, tsharkFilepath])
 
-    printMessage(STATUSCODE[1], "Dependencies Check")
-    for file in required_files:
-        if not checkExistence(getFullPath(file)):
-            print(f"\033[1;31mMissing \033[0m: {file}")
-            MISSING = True
-        else:
-            if isFileEmpty(file):
+        printMessage(STATUSCODE[1], "Dependencies Check")
+        for file in required_files:
+            if not checkExistence(getFullPath(file)):
+                print(f"\033[1;31mMissing \033[0m: {file}")
+                MISSING = True
+
+            elif isFileEmpty(file):
                 print(f"\033[1;34mEmpty \033[0m: {file}")
                 EMPTY = True
+
             else:
                 print(f"\033[1;32mFound \033[0m: {file}")
 
-    print("\n")
+        print("\n")
 
-    if MISSING or EMPTY:
-        exit()
+        if MISSING or EMPTY:
+            exit()
 
-    # If all files exist, return successfully
-    return
+        # If all files exist, return successfully
+        return
+
+    except Exception as error:
+        printMessage(STATUSCODE[0], error)
 
 
 checkDependencies()
